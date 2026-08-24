@@ -56,7 +56,7 @@ ALLOW_ADHOC_SIGNING=1 OPENCLAW_SKIP_MLX_TTS=1 ./scripts/package-mac-app.sh
 - Bundle ready → `~/openclaw/dist/OpenClaw.app`
 - 日志里会有 `apple-app-i18n`（macOS 字符串）和 Copying app localizations
 
-`xattr` 清夸不必须成功。权限被拒就跳过，右键打开即可。
+`xattr` 清除隔离属性不是必须成功。权限被拒就跳过，右键打开即可。
 
 ## 4. 打开
 
@@ -91,7 +91,7 @@ openclaw doctor --fix
 
 以 **正在跑的 Gateway** 为准。不要为了让 CLI `--version` 省心就 kill 掉 18789 上的进程。
 
-## 4e0d要做的事
+## 不要做的事
 
 - 不要 `git add dist/ OpenClaw.app node_modules`
 - 不要把本仓库当源码主仓库；源码永远是 `openclaw/openclaw`
