@@ -1,0 +1,41 @@
+# Never commit the local Mac app bundle or installer
+dist/
+*.app/
+*.app
+*.dmg
+*.pkg
+*.zip
+
+# Dependencies and build junk
+node_modules/
+.pnpm-store/
+out/
+build/
+DerivedData/
+*.xcuserstate
+*.xccheckout
+xcuserdata/
+
+# Secrets, local config, signing material
+.openclaw/
+**/.openclaw/
+*.bak
+*.p12
+*.cer
+*.certSigningRequest
+*.mobileprovision
+LocalSigning.xcconfig
+.env
+.env.*
+!.env.example
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
