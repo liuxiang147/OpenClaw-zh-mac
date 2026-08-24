@@ -1,0 +1,74 @@
+name: macOS Ad-hoc Package (optional)
+
+# 手动触发。会消耗 GitHub Actions 的 macOS 分钟（约 10 倍计费）。
+# 产物是 ad-hoc 签名，只适合 CI 验证打包脚本是否还能跑通，不能当安装包分发。
+
+on:
+  workflow_dispatch:
+    inputs:
+      openclaw_ref:
+        description: openclaw 源码 ref（branch / tag / SHA）
+        required: true
+        default: main
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mac-adhoc-${{ github.actor }}
+  cancel-in-progress: true
+
+jobs:
+  package:
+    runs-on: macos-14
+    timeout-minutes: 90
+    steps:
+      - name: Checkout notes repo
+        uses: actions/checkout@v4
+        with:
+          path: notes
+
+      - name: Shallow clone openclaw
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --branch "${{ inputs.openclaw_ref }}" \
+            https://github.com/openclaw/openclaw.git openclaw \
+            || git clone --depth 1 https://github.com/openclaw/openclaw.git openclaw
+          if [[ "${{ inputs.openclaw_ref }}" != "main" ]]; then
+            cd openclaw
+            git fetch --depth 1 origin "${{ inputs.openclaw_ref }}" || true
+            git checkout "${{ inputs.openclaw_ref }}" || true
+          fi
+
+      - name: Setup pnpm + Node
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: openclaw/pnpm-lock.yaml
+
+      - name: Install & package (ad-hoc)
+        working-directory: openclaw
+        env:
+          ALLOW_ADHOC_SIGNING: "1"
+          OPENCLAW_SKIP_MLX_TTS: "1"
+        run: |
+          set -euo pipefail
+          pnpm install
+          ./scripts/package-mac-app.sh
+          test -d dist/OpenClaw.app
+          du -sh dist/OpenClaw.app
+
+      - name: Upload ad-hoc artifact (3-day retention)
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenClaw-adhoc-${{ github.run_id }}
+          path: openclaw/dist/OpenClaw.app
+          retention-days: 3
+          if-no-files-found: error

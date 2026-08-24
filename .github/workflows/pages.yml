@@ -1,0 +1,76 @@
+name: Deploy Docs
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build static site
+        run: |
+          set -euo pipefail
+          mkdir -p _site/docs _site/scripts
+          cp README.md LICENSE NOTICE.md _site/
+          cp docs/*.md _site/docs/
+          cp scripts/package-mac-zh.sh _site/scripts/
+          cat > _site/index.html <<'EOF'
+          <!DOCTYPE html>
+          <html lang="zh-CN">
+          <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <title>OpenClaw-zh-mac</title>
+            <style>
+              :root { color-scheme: light dark; }
+              body { font-family: system-ui, sans-serif; max-width: 42rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; }
+              a { color: #0969da; }
+              code { font-size: 0.95em; }
+              ul { padding-left: 1.2rem; }
+            </style>
+          </head>
+          <body>
+            <h1>OpenClaw-zh-mac</h1>
+            <p>liuxiang147（Mr.AK）的 OpenClaw macOS 本地中文构建笔记。MIT · 源自 openclaw/openclaw。</p>
+            <ul>
+              <li><a href="README.md">README</a></li>
+              <li><a href="docs/BUILD-MAC-ZH.md">Mac 打包步骤</a></li>
+              <li><a href="docs/LOCALE-ZH.md">界面中文 zh-CN</a></li>
+              <li><a href="docs/ACTIONS-ZH.md">GitHub Actions 说明</a></li>
+              <li><a href="https://github.com/liuxiang147/OpenClaw-zh-mac">GitHub 仓库</a></li>
+              <li><a href="https://github.com/liuxiang147/openclaw">官方源码 fork</a></li>
+            </ul>
+            <p><strong>不提供</strong>可分发的 <code>.app</code> 安装包。请在本机 Apple Silicon 上按文档打包。</p>
+          </body>
+          </html>
+          EOF
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

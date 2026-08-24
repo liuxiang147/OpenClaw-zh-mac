@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate docs & scripts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Required files exist
+        run: |
+          set -euo pipefail
+          for f in README.md LICENSE NOTICE.md .gitignore \
+            docs/BUILD-MAC-ZH.md docs/LOCALE-ZH.md \
+            scripts/package-mac-zh.sh; do
+            test -f "$f" || { echo "missing: $f" >&2; exit 1; }
+          done
+
+      - name: Bash syntax check
+        run: bash -n scripts/package-mac-zh.sh
+
+      - name: Script must refuse non-openclaw root
+        run: |
+          set -euo pipefail
+          if scripts/package-mac-zh.sh; then
+            echo "expected non-zero exit outside openclaw root" >&2
+            exit 1
+          fi
+
+      - name: Markdown must mention zh-CN and ad-hoc
+        run: |
+          set -euo pipefail
+          grep -q 'zh-CN' docs/LOCALE-ZH.md
+          grep -q 'ALLOW_ADHOC_SIGNING' docs/BUILD-MAC-ZH.md
+          grep -q 'OpenClaw.app' README.md

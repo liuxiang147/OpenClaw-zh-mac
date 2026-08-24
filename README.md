@@ -8,10 +8,12 @@
 | --- | --- |
 | 公开地址 | https://github.com/liuxiang147/OpenClaw-zh-mac |
 | 上游源码 | https://github.com/openclaw/openclaw |
+| 官方源码 fork | https://github.com/liuxiang147/openclaw |
 | 许可证 | MIT © OpenClaw Foundation |
 | 本机环境 | Apple Silicon · macOS 26.6.2 · Xcode 26.6 |
 | Gateway | 2026.8.1-beta.2 · 端口 18789 · LaunchAgent |
 | 日常 UI | `OpenClaw.app`（不用浏览器当主控制台） |
+| 自动化 | GitHub Actions：CI + Pages；Mac 打包仅手动可选 |
 
 ## 本仓库有什么 / 没有什么
 
@@ -21,6 +23,7 @@
 - Control UI 切到简体中文 `zh-CN`
 - 免费 ad-hoc 签名的限制说明
 - 不要把什么 commit 进 Git 的忽略规则
+- GitHub Actions：文档校验、Pages 部署、可选 macOS ad-hoc 试打包
 
 **没有（也不要推）**
 
@@ -31,7 +34,21 @@
 | `~/.openclaw/` | 密钥、会话、本地配置 |
 | 证书 / `.p12` / `LocalSigning.xcconfig` | 私人签名材料 |
 
-没有 GitHub Organization。这个仓库挂在个人账号 **liuxiang147** 下，公开。
+没有 GitHub Organization。这个仓库挂在个人账号 **liuxiang147** 下。
+
+## GitHub Actions（自动化）
+
+详细见 [docs/ACTIONS-ZH.md](docs/ACTIONS-ZH.md)。
+
+| 工作流 | 作用 |
+| --- | --- |
+| **CI** | 推送 / PR 时检查文档与脚本 |
+| **Deploy Docs** | 推送到 `main` 后部署 GitHub Pages |
+| **macOS Ad-hoc Package** | 仅手动；云端试打 ad-hoc 包（耗 macOS 分钟，不能当安装包） |
+
+首次启用 Pages：仓库 **Settings → Pages → Source = GitHub Actions**。
+
+官方公开的 `macos-release` 只做校验，**不签名、不公证**。可分发安装包需要付费 Developer ID，本仓库不走这条路。
 
 ## 从上游重新打出 Mac 应用
 
@@ -67,7 +84,7 @@ ALLOW_ADHOC_SIGNING=1 OPENCLAW_SKIP_MLX_TTS=1 ./scripts/package-mac-app.sh
 | 密钥 | `~/.openclaw` 与本地状态不能公开 |
 | 正确做法 | 公开构建步骤，各自在自己的 Mac 上打包 |
 
-没有 $99 Apple Developer Program就不能公证 / 上架 App Store。本仓库走免费 ad-hoc 路线。
+没有 $99 Apple Developer Program 就不能公证 / 上架 App Store。本仓库走免费 ad-hoc 路线。
 
 ## 许可证
 
